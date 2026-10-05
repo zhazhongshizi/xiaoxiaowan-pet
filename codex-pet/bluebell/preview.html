@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>&#x5C0F;&#x5C0F;&#x6E7E; - Codex Pet</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f5f7;color:#20242c;font:15px system-ui,sans-serif;letter-spacing:0}main{max-width:900px;margin:auto;padding:28px 20px}header{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #d8dce2;padding-bottom:16px}h1{font-size:26px;margin:0}header span{color:#69717d;font-size:13px}.stage{display:grid;place-items:center;min-height:340px;border-bottom:1px solid #d8dce2;background-color:var(--stage,#fff);background-image:linear-gradient(45deg,#8b93a010 25%,transparent 25%),linear-gradient(-45deg,#8b93a010 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#8b93a010 75%),linear-gradient(-45deg,transparent 75%,#8b93a010 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0}canvas{width:288px;height:312px;max-width:100%;object-fit:contain}.controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:20px 0}label{display:flex;align-items:center;gap:8px}select,button{font:inherit;min-height:36px;border:1px solid #c6ccd6;background:#fff;border-radius:5px;padding:6px 10px;color:inherit}button{cursor:pointer}button:hover{background:#e7edf5}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #287eb1;outline-offset:3px}.swatch{width:28px;min-height:28px;padding:0;border-radius:50%;background:var(--color)}.swatch:hover{background:var(--color)}.swatch[aria-pressed=true]{outline:2px solid #2793bb;outline-offset:3px}.timeline{display:flex;align-items:center;gap:12px;width:100%}.timeline input{flex:1;min-width:100px;accent-color:#208fb9}output{min-width:55px;font-variant-numeric:tabular-nums}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:16px}.item{text-align:center;padding:15px 6px;border-top:1px solid #d8dce2}.item img{width:192px;height:208px;max-width:100%;object-fit:contain}.item p{font-size:13px;margin:6px 0;color:#69717d}footer{border-top:1px solid #d8dce2;padding-top:18px;display:flex;gap:24px;flex-wrap:wrap}a{color:#187ea5}#error{color:#b52d43}@media(max-width:540px){main{padding:20px 12px}header{align-items:center;gap:12px}header span{max-width:120px;text-align:right}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.stage{min-height:320px}}
+</style>
+<main>
+<header><h1>&#x5C0F;&#x5C0F;&#x6E7E;</h1><span>Codex Pet &middot; v2</span></header>
+<div class="stage"><canvas id="pet" width="192" height="208" aria-label="&#x5C0F;&#x5C0F;&#x6E7E; animation"></canvas></div>
+<div id="error" role="alert"></div>
+<div class="controls">
+<label>&#x52A8;&#x4F5C; <select id="state">
+<option value="idle">&#x5F85;&#x673A;</option><option value="running-right">&#x5411;&#x53F3;&#x79FB;&#x52A8;</option><option value="running-left">&#x5411;&#x5DE6;&#x79FB;&#x52A8;</option><option value="waving">&#x6325;&#x624B;</option><option value="jumping">&#x8DF3;&#x8DC3;</option><option value="failed">&#x5931;&#x8D25;&#x53CD;&#x9988;</option><option value="waiting">&#x7B49;&#x5F85;&#x8F93;&#x5165;</option><option value="running">&#x4E13;&#x6CE8;&#x5DE5;&#x4F5C;</option><option value="review">&#x68C0;&#x67E5;&#x7ED3;&#x679C;</option><option value="look">&#x89C6;&#x7EBF;&#x73AF;&#x89C6;</option><option value="transition">&#x5F85;&#x673A; &rarr; &#x8DF3;&#x8DC3; &rarr; &#x5F85;&#x673A;</option>
+</select></label>
+<button id="play" type="button">&#x6682;&#x505C;</button>
+<label>&#x901F;&#x5EA6; <select id="speed"><option value="0.5">0.5x</option><option selected value="1">1x</option><option value="1.5">1.5x</option><option value="2">2x</option></select></label>
+<label><input id="follow" type="checkbox">&#x89C6;&#x7EBF;&#x8DDF;&#x968F;</label>
+<button class="swatch" title="Light background" aria-label="Light background" aria-pressed="true" data-bg="#ffffff" style="--color:#ffffff"></button>
+<button class="swatch" title="Dark background" aria-label="Dark background" aria-pressed="false" data-bg="#252833" style="--color:#252833"></button>
+<button class="swatch" title="Pink background" aria-label="Pink background" aria-pressed="false" data-bg="#f8dce9" style="--color:#f8dce9"></button>
+<div class="timeline"><input id="frame" type="range" min="0" max="5" value="0" aria-label="Animation frame"><output id="counter">1 / 6</output></div>
+</div>
+<div class="grid" id="grid"></div>
+<footer><a href="spritesheet.webp">&#x900F;&#x660E;&#x52A8;&#x753B;&#x56FE;&#x96C6;</a><a href="qa/previews/all-states.gif">GIF</a><a href="qa/look-directions.png">16 &#x65B9;&#x5411;&#x89C6;&#x7EBF;</a></footer>
+</main>
+<script>
+'use strict';
+const definitions=[['idle',6,[280,110,110,140,140,320]],['running-right',8,Array(8).fill(120)],['running-left',8,Array(8).fill(120)],['waving',4,[140,140,140,280]],['jumping',5,[140,140,140,140,280]],['failed',8,[140,140,140,140,140,140,140,240]],['waiting',6,[150,150,150,150,150,260]],['running',6,[120,120,120,120,120,220]],['review',6,[150,150,150,150,150,280]]];
+const canvas=document.querySelector('#pet'),ctx=canvas.getContext('2d'),state=document.querySelector('#state'),frame=document.querySelector('#frame'),counter=document.querySelector('#counter'),play=document.querySelector('#play'),follow=document.querySelector('#follow');
+const atlas=new Image();let index=0,playing=!matchMedia('(prefers-reduced-motion: reduce)').matches,last=0,sequence=[];
+function list(name){if(name==='look')return Array.from({length:16},(_,i)=>({row:9+Math.floor(i/8),col:i%8,ms:160}));if(name==='transition')return [...list('idle'),...list('jumping'),...list('idle')];const row=definitions.findIndex(d=>d[0]===name);return definitions[row][2].map((ms,col)=>({row,col,ms}));}
+function paint(){if(!atlas.complete||!atlas.naturalWidth)return;const p=sequence[index];ctx.clearRect(0,0,192,208);ctx.drawImage(atlas,p.col*192,p.row*208,192,208,0,0,192,208);frame.value=index;counter.value=`${index+1} / ${sequence.length}`;}
+function change(){sequence=list(state.value);index=0;last=performance.now();frame.max=sequence.length-1;paint();}
+function playback(){play.textContent=playing?'\u6682\u505c':'\u64ad\u653e';play.setAttribute('aria-pressed',String(playing));}
+state.addEventListener('change',change);play.addEventListener('click',()=>{playing=!playing;last=performance.now();playback();});frame.addEventListener('input',()=>{index=Number(frame.value);playing=false;playback();paint();});
+document.querySelectorAll('.swatch').forEach(b=>b.addEventListener('click',()=>{document.documentElement.style.setProperty('--stage',b.dataset.bg);document.querySelectorAll('.swatch').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}));
+document.addEventListener('pointermove',e=>{if(!follow.checked)return;const b=canvas.getBoundingClientRect(),dx=e.clientX-b.left-b.width/2,dy=e.clientY-b.top-b.height/2;const angle=(Math.atan2(dx,-dy)*180/Math.PI+360)%360;state.value='look';sequence=list('look');index=Math.round(angle/22.5)%16;frame.max=15;paint();});
+follow.addEventListener('change',()=>{last=performance.now();if(!follow.checked)change();});
+function tick(now){if(playing&&!follow.checked&&now-last>=sequence[index].ms/Number(document.querySelector('#speed').value)){index=(index+1)%sequence.length;last=now;paint();}requestAnimationFrame(tick);}
+atlas.onload=()=>{if(atlas.naturalWidth!==1536||atlas.naturalHeight!==2288){document.querySelector('#error').textContent='Unexpected atlas dimensions';return;}change();};atlas.onerror=()=>{document.querySelector('#error').textContent='Unable to load spritesheet.webp';};atlas.src='spritesheet.webp';
+const names=Array.from(state.options).slice(0,9);definitions.forEach((d,i)=>{const item=document.createElement('div');item.className='item';const img=document.createElement('img');img.src=matchMedia('(prefers-reduced-motion: reduce)').matches?`qa/stills/${d[0]}.png`:`qa/previews/${d[0]}.gif`;img.alt=names[i].textContent;const text=document.createElement('p');text.textContent=names[i].textContent;item.append(img,text);document.querySelector('#grid').append(item);});
+change();playback();requestAnimationFrame(tick);
+</script>
+</html>

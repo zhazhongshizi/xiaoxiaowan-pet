@@ -1,0 +1,3 @@
+PASS: monitor bounds and cardinal gaze
+PASS: 292 rendered frames across four sizes, alpha and nonblank checks
+PASS: settings roundtrip

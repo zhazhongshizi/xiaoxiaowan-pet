@@ -1,0 +1,7 @@
+PASS: actual layered desktop capture is nonblank and transparent
+PASS: native transparent and opaque hit-testing
+PASS: native mouse messages drag the pet by the expected offset
+PASS: native click waves and native double-click jumps
+PASS: native size changes and pause toggle
+PASS: walking animation moves the actual desktop window
+PASS: native right-click menu, hide and single-instance restore message
